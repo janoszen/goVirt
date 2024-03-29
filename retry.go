@@ -85,6 +85,9 @@ func retry(
 func recoverFailure(action string, retries []RetryInstance, err error, logger ovirtclientlog.Logger) bool {
 	var e EngineError
 	if !errors.As(err, &e) {
+		e = realIdentify(err)
+	}
+	if e == nil {
 		return false
 	}
 	if !e.CanRecover() {
