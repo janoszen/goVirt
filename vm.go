@@ -536,12 +536,28 @@ func convertSDKInitialization(sdkObject *ovirtsdk.Vm) (*initialization, error) {
 }
 
 func convertSDKNicConfiguration(sdkObject *ovirtsdk.NicConfiguration) NicConfiguration {
-	ipv4 := sdkObject.MustIp()
+	name, _ := sdkObject.Name()
+	ipv4, ok := sdkObject.Ip()
+	if !ok {
+		return NewNicConfiguration(
+			name, IP{
+				Address: "",
+				Gateway: "",
+				Netmask: "",
+				Version: IPVERSION_V4,
+			},
+		)
+	}
+
+	// It is fine for these values to be empty strings to account for shutdown VMs where these values are not set.
+	address, _ := ipv4.Address()
+	gateway, _ := ipv4.Gateway()
+	netmask, _ := ipv4.Netmask()
 	nicConfiguration := NewNicConfiguration(
-		sdkObject.MustName(), IP{
-			Address: ipv4.MustAddress(),
-			Gateway: ipv4.MustGateway(),
-			Netmask: ipv4.MustNetmask(),
+		name, IP{
+			Address: address,
+			Gateway: gateway,
+			Netmask: netmask,
 			Version: IPVERSION_V4,
 		},
 	)
